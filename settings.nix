@@ -568,6 +568,16 @@
         inactive-color = nullable types.str;
       };
 
+      blur-rule = section {
+        enable = nullable types.bool;
+
+        passes = nullable types.int;
+
+        radius = nullable float-or-int;
+
+        noise = nullable float-or-int;
+      };
+
       geometry-corner-radius-rule = nullable (record {
         top-left = required types.float;
         top-right = required types.float;
@@ -1995,6 +2005,17 @@
                 };
               }
               {
+                blur = section {
+                  enable = optional types.bool false;
+
+                  passes = optional types.int 4;
+
+                  radius = optional float-or-int 10.0;
+
+                  noise = optional float-or-int 0.1;
+                };
+              }
+              {
                 insert-hint =
                   section' (
                     { options, ... }:
@@ -2174,6 +2195,22 @@
                           '';
                         })
 
+                      ];
+                    }
+                  )
+                );
+
+                blur = nullable (
+                  submodule (
+                    { options, ... }:
+                    {
+                      imports = make-ordered-options [
+                        {
+                          enable = optional types.bool true;
+                          passes = optional types.int 4;
+                          radius = optional float-or-int 10.0;
+                          noise = optional float-or-int 0.1;
+                        }
                       ];
                     }
                   )
@@ -2742,6 +2779,7 @@
                         }
                       );
 
+                    blur = blur-rule;
                     shadow = shadow-rule;
                     draw-border-with-background = nullable types.bool // {
                       description = ''
@@ -3393,6 +3431,16 @@
           ]
         );
 
+        blur = map' (nullable plain) (
+          cfg:
+          optional-node (cfg.enable) [
+            (flag "on")
+            (leaf "passes" cfg.passes)
+            (leaf "radius" cfg.radius)
+            (leaf "noise" cfg.noise)
+          ]
+        );
+
         tab-indicator = map' plain (
           cfg:
           toggle "off" cfg [
@@ -3629,6 +3677,7 @@
             (leaf "bottom" cfg.layout.struts.bottom)
           ])
           (borderish "focus-ring" cfg.layout.focus-ring)
+          (blur "blur" cfg.layout.blur)
           (borderish "border" cfg.layout.border)
           (nullable leaf "background-color" cfg.layout.background-color)
           (shadow "shadow" cfg.layout.shadow)
